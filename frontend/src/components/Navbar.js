@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useLogout } from "../hooks/useLogout";
 import { useAuthContext } from "../hooks/useAuthContext";
+
 function Navbar() {
   const { logout } = useLogout();
   const { user } = useAuthContext();
@@ -20,6 +21,8 @@ function Navbar() {
             <div>
               <span>{user.email}</span>
               <button onClick={handleClick}>Logout</button>
+              {/* Add a link to the Analysis page */}
+              <Link to="/analysis">Food Detection</Link>
             </div>
           )}
           {!user && (
