@@ -1,26 +1,16 @@
 import { useState } from "react";
+import { useWorkoutContext } from "../hooks/useWorkoutContext";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 function WorkoutForm() {
+  const { dispatch } = useWorkoutContext();
   const { user } = useAuthContext();
 
-  const [name, setName] = useState("");
-  const [ingredients, setIngredients] = useState([""]);
-  const [instructions, setInstructions] = useState("");
-  const [prepTime, setPrepTime] = useState("");
-  const [difficulty, setDifficulty] = useState("easy");
+  const [title, setTitle] = useState("");
+  const [load, setLoad] = useState("");
+  const [reps, setReps] = useState("");
   const [error, setError] = useState(null);
   const [emptyFields, setEmptyFields] = useState([]);
-
-  const handleIngredientChange = (index, value) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index] = value;
-    setIngredients(newIngredients);
-  };
-
-  const addIngredientField = () => {
-    setIngredients([...ingredients, ""]);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,87 +20,68 @@ function WorkoutForm() {
       return;
     }
 
-    const recipe = { name, ingredients, instructions, prepTime, difficulty };
+    const workout = { title, load, reps };
 
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes`, {
-      method: "POST",
-      body: JSON.stringify(recipe),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.token}`,
-      },
-    });
+    const response = await fetch(
+      `${process.env.REACT_APP_API_URL}/api/workouts`,
+      {
+        method: "POST",
+        body: JSON.stringify(workout), // convert JS object to JSON string
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      }
+    );
 
     const json = await response.json();
 
     if (!response.ok) {
       setError(json.error);
-      setEmptyFields(json.emptyFields || []);
+      setEmptyFields(json.emptyFields);
     }
 
     if (response.ok) {
-      setName("");
-      setIngredients([""]);
-      setInstructions("");
-      setPrepTime("");
-      setDifficulty("easy");
+      setTitle("");
+      setLoad("");
+      setReps("");
       setError(null);
       setEmptyFields([]);
-      console.log("New recipe added", json);
+      console.log("new workout added", json);
+      // add new workout to global context state
+      dispatch({ type: "CREATE_WORKOUT", payload: json });
     }
   };
 
   return (
     <form className="create" onSubmit={handleSubmit}>
-      <h3>Add a New Recipe</h3>
+      <h3>Add a New Workout</h3>
 
-      <label>Recipe Name:</label>
+      <label>Workout title:</label>
       <input
         type="text"
-        onChange={(e) => setName(e.target.value)}
-        value={name}
-        className={emptyFields.includes("name") ? "error" : ""}
+        onChange={(e) => setTitle(e.target.value)}
+        value={title}
+        className={emptyFields.includes("title") ? "error" : ""}
       />
 
-      <label>Ingredients:</label>
-      {ingredients.map((ingredient, index) => (
-        <input
-          key={index}
-          type="text"
-          value={ingredient}
-          onChange={(e) => handleIngredientChange(index, e.target.value)}
-          className={emptyFields.includes("ingredients") ? "error" : ""}
-        />
-      ))}
-      <button type="button" onClick={addIngredientField}>Add Ingredient</button>
-
-      <label>Cooking Instructions:</label>
-      <textarea
-        onChange={(e) => setInstructions(e.target.value)}
-        value={instructions}
-        className={emptyFields.includes("instructions") ? "error" : ""}
-      ></textarea>
-
-      <label>Preparation Time (in minutes):</label>
+      <label>Load (in kg):</label>
       <input
         type="number"
-        onChange={(e) => setPrepTime(e.target.value)}
-        value={prepTime}
-        className={emptyFields.includes("prepTime") ? "error" : ""}
+        onChange={(e) => setLoad(e.target.value)}
+        value={load}
+        className={emptyFields.includes("load") ? "error" : ""}
       />
 
-      <label>Difficulty Level:</label>
-      <select
-        onChange={(e) => setDifficulty(e.target.value)}
-        value={difficulty}
-        className={emptyFields.includes("difficulty") ? "error" : ""}
-      >
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-      </select>
+      <label>Reps:</label>
+      <input
+        type="number"
+        onChange={(e) => setReps(e.target.value)}
+        value={reps}
+        className={emptyFields.includes("reps") ? "error" : ""}
+      />
 
-      <button>Add Recipe</button>
+      <button>Add Workout</button>
       {error && <div className="error">{error}</div>}
     </form>
   );

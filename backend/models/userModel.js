@@ -1,22 +1,23 @@
-// models/User.js
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 
-const UserSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+const Schema = mongoose.Schema;
+
+const userSchema = new Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
 });
 
-// Hash password before saving
-// UserSchema.pre("save", async function (next) {
-//   if (!this.isModified("password")) return next();
-//   this.password = await bcrypt.hash(this.password, 10);
-//   next();
-// });
-
 // static signup method
-UserSchema.statics.signup = async function (email, password) {
+userSchema.statics.signup = async function (email, password) {
   // validation
   if (!email || !password) {
     throw Error("All fields must be filled");
@@ -45,7 +46,7 @@ UserSchema.statics.signup = async function (email, password) {
 };
 
 // static login method
-UserSchema.statics.login = async function (email, password) {
+userSchema.statics.login = async function (email, password) {
   // validation
   if (!email || !password) {
     throw Error("All fields must be filled");
@@ -62,4 +63,4 @@ UserSchema.statics.login = async function (email, password) {
   return user;
 };
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("User", userSchema);

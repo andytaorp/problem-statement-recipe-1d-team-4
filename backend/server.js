@@ -1,46 +1,58 @@
+// Entry file for the backend app
+// where we register the express app
+
+// dovenv is the package that loads environment variables
+// from .env file into process.env object available globally in node.js environment
+// config() attaches environment variables to process.env
+require("dotenv").config();
+
+// Require express that installed via npm
 const express = require("express");
+// Require mongoose that installed via npm
 const mongoose = require("mongoose");
-const dotenv = require("dotenv");
+// Require routes
+const workoutRoutes = require("./routes/workouts");
+const userRoutes = require("./routes/user");
+// Require cors
 const cors = require("cors");
-const authRoutes = require("./routes/authRoutes");
-const recipeRoutes = require("./routes/recipeRoutes");
 
-dotenv.config();
-
+// Set up the express app
 const app = express();
+
+// Allow requests from all origins (for development only)
+app.use(cors());
+
+// Handle preflight requests globally
+app.options("*", cors());
+
+// Middleware:
+// any code that executes between us getting a request on the server
+// and us sending a response back to the client
+
+// Parse and attach data sent to server to request object
 app.use(express.json());
 
-// ✅ Fix CORS issue
-app.use(
-  cors({
-    origin: ["http://localhost:3000", "http://localhost:4001"], // Allow both frontend ports
-    credentials: true, // Allow cookies & auth headers
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
+// Global middleware
+// the arrow function will fire for each request that comes in
+app.use((req, res, next) => {
+  console.log(req.path, req.method);
+  next();
+});
 
 // Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/recipes", recipeRoutes);
+// workoutRoutes is triggered when we make a request to /api/workouts
+app.use("/api/workouts", workoutRoutes);
+app.use("/api/user", userRoutes);
 
-const PORT = process.env.PORT || 4000;
-const MONGO_URI = process.env.MONGO_URI;
-
-if (!MONGO_URI) {
-  console.error("❌ ERROR: Missing MONGO_URI in .env file");
-  process.exit(1); // Prevent the app from running without a database connection
-}
-
+// Connect to DB
 mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(process.env.MONGO_URI)
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`✅ Server running on port ${PORT}, connected to MongoDB`);
+    // Listen for requests
+    app.listen(process.env.PORT, () => {
+      console.log("Connected to DB & listening on port", process.env.PORT);
     });
   })
   .catch((err) => {
-    console.error("❌ MongoDB Connection Error:", err);
-    process.exit(1);
+    console.log(err);
   });
