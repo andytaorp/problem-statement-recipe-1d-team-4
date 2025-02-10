@@ -1,49 +1,63 @@
-import { useWorkoutContext } from "../hooks/useWorkoutContext";
-// date fns
-import formatDistanceToNow from "date-fns/formatDistanceToNow";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
-function WorkoutDetails({ workout }) {
-  const { dispatch } = useWorkoutContext();
+function WorkoutDetails() {
+  const { id } = useParams();
   const { user } = useAuthContext();
+  const [recipe, setRecipe] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleClick = async () => {
-    if (!user) {
-      return;
-    }
+  useEffect(() => {
+    const fetchRecipe = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes/${id}`, {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+          },
+        });
 
-    const response = await fetch(
-      `${process.env.REACT_APP_API_URL}/api/workouts/${workout._id}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
+        if (!response.ok) {
+          throw new Error("Failed to fetch recipe details");
+        }
+
+        const data = await response.json();
+        setRecipe(data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
-    );
-    const json = await response.json();
+    };
 
-    if (response.ok) {
-      dispatch({ type: "DELETE_WORKOUT", payload: json });
+    if (user) {
+      fetchRecipe();
     }
-  };
+  }, [id, user]);
+
+  if (!user) {
+    return <p>You must be logged in to view this recipe.</p>;
+  }
+
+  if (loading) return <p>Loading recipe...</p>;
+  if (error) return <p className="error">{error}</p>;
+
   return (
-    <div className="workout-details">
-      <h4>{workout.title}</h4>
-      <p>
-        <strong>Load (kg): </strong>
-        {workout.load}
-      </p>
-      <p>
-        <strong>Reps: </strong>
-        {workout.reps}
-      </p>
-      <p>
-        {formatDistanceToNow(new Date(workout.createdAt), { addSuffix: true })}
-      </p>
-      <span className="material-symbols-outlined" onClick={handleClick}>
-        delete
-      </span>
+    <div className="recipe-details">
+      <h2>{recipe.name}</h2>
+      <p><strong>Preparation Time:</strong> {recipe.prepTime} minutes</p>
+      <p><strong>Difficulty:</strong> {recipe.difficulty}</p>
+
+      <h3>Ingredients:</h3>
+      <ul>
+        {recipe.ingredients.map((ingredient, index) => (
+          <li key={index}>{ingredient}</li>
+        ))}
+      </ul>
+
+      <h3>Instructions:</h3>
+      <p>{recipe.instructions}</p>
     </div>
   );
 }
