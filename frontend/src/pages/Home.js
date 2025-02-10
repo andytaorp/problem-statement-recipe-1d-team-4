@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import WorkoutDetails from "../components/WorkoutDetails";
-import WorkoutForm from "../components/WorkoutForm";
-import { useWorkoutContext } from "../hooks/useWorkoutContext";
+import WorkoutDetails from "../components/RecipeDetails";
+import WorkoutForm from "../components/RecipeForm";
+import { useRecipeContext  } from "../hooks/useRecipeContext";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 function Home() {
-  const { workouts, dispatch } = useWorkoutContext(); // global context state
+  const { workouts, dispatch } = useRecipeContext();
   const { user } = useAuthContext();
   const [searchTerm, setSearchTerm] = useState(""); // State for search filter
 
