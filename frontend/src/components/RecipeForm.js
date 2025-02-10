@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuthContext } from "../hooks/useAuthContext";
 
-function WorkoutForm() {
+function RecipeForm() { // Renamed to RecipeForm
   const { user } = useAuthContext();
 
   const [name, setName] = useState("");
@@ -116,4 +116,4 @@ function WorkoutForm() {
   );
 }
 
-export default WorkoutForm;
+export default RecipeForm;

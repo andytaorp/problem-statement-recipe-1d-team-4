@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
-function WorkoutDetails() {
+function RecipeDetails() { // Renamed to RecipeDetails
   const { id } = useParams();
   const { user } = useAuthContext();
   const [recipe, setRecipe] = useState(null);
@@ -188,4 +188,4 @@ function WorkoutDetails() {
   );
 }
 
-export default WorkoutDetails;
+export default RecipeDetails;
