@@ -43,6 +43,9 @@ function Home() {
   return (
     <div className="home">
       {/* Search Bar */}
+      
+
+      <div className="content">
       <input
         type="text"
         placeholder="Search recipes..."
@@ -50,8 +53,6 @@ function Home() {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="search-bar"
       />
-
-      <div className="content">
         {/* Recipes List */}
         <div className="recipes">
           {filteredRecipes.length > 0 ? (
@@ -64,8 +65,9 @@ function Home() {
         </div>
 
         {/* Recipe Form */}
-        <RecipeForm />
+        
       </div>
+      <RecipeForm />
     </div>
   );
 }

@@ -5,6 +5,7 @@
  **👤 Nick**
 - ✅ Made **login** work
 - ✅ Made **create** work
+- ✅ Made **Add** work
 - 🎨 **CSS Styling Improvements**
 
  **🤖 Sanraj AI**
