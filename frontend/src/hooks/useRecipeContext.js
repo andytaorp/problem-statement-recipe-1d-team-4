@@ -1,4 +1,4 @@
-import { RecipeContext } from "../context/RecipeContext";
+import { RecipeContext } from "../context/WorkoutContext";
 import { useContext } from "react";
 
 // Custom hook

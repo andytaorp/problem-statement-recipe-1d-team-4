@@ -1,9 +1,9 @@
 import { useAuthContext } from "./useAuthContext";
-import { useRecipeContext } from "./useRecipeContext"; // Updated to use RecipeContext
+import { useRecipeContext } from "./useRecipeContext"; // Ensure correct import
 
 export const useLogout = () => {
   const { dispatch } = useAuthContext();
-  const { dispatch: dispatchRecipes } = useRecipeContext(); // Updated dispatch for recipes
+  const { dispatch: dispatchRecipes } = useRecipeContext(); // Correct dispatch for recipes
 
   const logout = () => {
     // Remove user from local storage
@@ -13,7 +13,7 @@ export const useLogout = () => {
     dispatch({ type: "LOGOUT" });
 
     // Remove recipes from context
-    dispatchRecipes({ type: "SET_RECIPES", payload: null }); // Updated action type
+    dispatchRecipes({ type: "SET_RECIPES", payload: [] }); // Updated to an empty array instead of null
   };
 
   return { logout };
