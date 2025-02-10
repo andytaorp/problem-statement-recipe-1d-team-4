@@ -1,5 +1,5 @@
-const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 const createToken = (_id) => {
   // sign(payload, secret, options)

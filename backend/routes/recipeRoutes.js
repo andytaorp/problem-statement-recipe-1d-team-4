@@ -1,23 +1,32 @@
+// routes/recipeRoutes.js
 const express = require("express");
 const {
-  getRecipes,
+  getAllRecipes,
   getRecipe,
   createRecipe,
-  deleteRecipe,
   updateRecipe,
+  deleteRecipe,
 } = require("../controllers/recipeController");
-const requireAuth = require("../middleware/requireAuth");
+
+const authMiddleware = require("../middleware/auth");
 
 const router = express.Router();
 
-// ✅ Require authentication for all recipe routes
-router.use(requireAuth);
+router.use(authMiddleware);
 
-// Routes
-router.get("/", getRecipes);
-router.get("/:id", getRecipe);
+// Create Recipe
 router.post("/", createRecipe);
-router.delete("/:id", deleteRecipe);
+
+// Get All Recipes
+router.get("/", getAllRecipes);
+
+// Get Single Recipe
+router.get("/:id", getRecipe);
+
+// Update Recipe
 router.patch("/:id", updateRecipe);
+
+// Delete Recipe
+router.delete("/:id", deleteRecipe);
 
 module.exports = router;
