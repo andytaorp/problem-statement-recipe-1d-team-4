@@ -5,15 +5,13 @@ import { useRecipeContext } from "../hooks/useRecipeContext";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 function Home() {
-  const { recipes, dispatch } = useRecipeContext(); // ✅ Global recipe context
+  const { recipes, dispatch } = useRecipeContext();
   const { user } = useAuthContext();
-  const [searchTerm, setSearchTerm] = useState(""); // ✅ Search filter
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // ✅ Fetch recipes on page load
+  // Fetch recipes when user logs in
   useEffect(() => {
     const fetchRecipes = async () => {
-      if (!user) return;
-
       try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes`, {
           headers: { Authorization: `Bearer ${user.token}` },
@@ -24,16 +22,18 @@ function Home() {
         }
 
         const json = await response.json();
-        dispatch({ type: "SET_RECIPES", payload: json }); // ✅ Store in context
+        dispatch({ type: "SET_RECIPES", payload: json });
       } catch (error) {
         console.error("Error fetching recipes:", error);
       }
     };
 
-    fetchRecipes();
+    if (user) {
+      fetchRecipes();
+    }
   }, [dispatch, user]);
 
-  // ✅ Filter recipes by search term
+  // Filter recipes based on search term
   const filteredRecipes = recipes
     ? recipes.filter((recipe) =>
         recipe.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -42,30 +42,29 @@ function Home() {
 
   return (
     <div className="home">
-      <div className="recipes-container">
-        {/* ✅ Left side: Recipes list */}
-        <div className="recipes">
-          <h2>Recipes</h2>
-          <input
-            type="text"
-            placeholder="Search recipes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-bar"
-          />
+      {/* Search Bar */}
+      <input
+        type="text"
+        placeholder="Search recipes..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="search-bar"
+      />
 
+      <div className="content">
+        {/* Recipes List */}
+        <div className="recipes">
           {filteredRecipes.length > 0 ? (
-            filteredRecipes.map((recipe) => <RecipeDetails key={recipe._id} recipe={recipe} />)
+            filteredRecipes.map((recipe) => (
+              <RecipeDetails key={recipe._id} recipe={recipe} />
+            ))
           ) : (
             <p>No recipes found</p>
           )}
         </div>
 
-        {/* ✅ Right side: Recipe Form */}
-        <div className="form-container">
-          <h2>Add a Recipe</h2>
-          <RecipeForm />
-        </div>
+        {/* Recipe Form */}
+        <RecipeForm />
       </div>
     </div>
   );

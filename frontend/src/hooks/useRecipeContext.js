@@ -1,9 +1,9 @@
-import { RecipeContext } from "../context/WorkoutContext";
+import { RecipeContext } from "../context/WorkoutContext"; // ✅ FIXED: Correct import path
 import { useContext } from "react";
 
-// Custom hook
+// Custom hook to use RecipeContext
 export const useRecipeContext = () => {
-  const context = useContext(RecipeContext); // Use the value passed in the provider
+  const context = useContext(RecipeContext); // ✅ Use the RecipeContext
 
   if (!context) {
     throw Error(
