@@ -1,18 +1,19 @@
 import { useAuthContext } from "./useAuthContext";
-import { useWorkoutContext } from "./useWorkoutContext";
+import { useRecipeContext } from "./useRecipeContext"; // Updated to use RecipeContext
 
 export const useLogout = () => {
   const { dispatch } = useAuthContext();
-  const { dispatch: dispatchWorkouts } = useWorkoutContext();
+  const { dispatch: dispatchRecipes } = useRecipeContext(); // Updated dispatch for recipes
+
   const logout = () => {
-    // remove user from local storage
+    // Remove user from local storage
     localStorage.removeItem("user");
 
-    // dispatch logout action, remove user from auth context
+    // Dispatch logout action, remove user from auth context
     dispatch({ type: "LOGOUT" });
 
-    // remove workouts from context
-    dispatchWorkouts({ type: "SET_WORKOUTS", payload: null });
+    // Remove recipes from context
+    dispatchRecipes({ type: "SET_RECIPES", payload: null }); // Updated action type
   };
 
   return { logout };
