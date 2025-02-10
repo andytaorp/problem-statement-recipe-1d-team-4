@@ -1,52 +1,63 @@
-import { useEffect } from "react";
-import WorkoutDetails from "../components/RecipeDetails"; // ✅ Uses RecipeDetails instead of WorkoutDetails
-import WorkoutForm from "../components/RecipeForm"; // ✅ Uses RecipeForm instead of WorkoutForm
-import { useRecipeContext } from "../hooks/useRecipeContext"; // ✅ Corrected context import
+import { useEffect, useState } from "react";
+import WorkoutDetails from "../components/WorkoutDetails";
+import WorkoutForm from "../components/WorkoutForm";
+import { useWorkoutContext } from "../hooks/useWorkoutContext";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 function Home() {
-  const { workouts, dispatch } = useRecipeContext(); // ✅ Uses RecipeContext instead
+  const { workouts, dispatch } = useWorkoutContext(); // global context state
   const { user } = useAuthContext();
+  const [searchTerm, setSearchTerm] = useState(""); // State for search filter
 
   useEffect(() => {
     const fetchWorkouts = async () => {
-      if (!user || !user.token) return; // ✅ Prevents request if user is not logged in
-
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/workouts`,
-          {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch recipes");
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/workouts`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
         }
-
-        const json = await response.json();
+      );
+      const json = await response.json(); // parse JSON response body as JS array of objects
+      if (response.ok) {
         dispatch({ type: "SET_WORKOUTS", payload: json });
-      } catch (error) {
-        console.error("Error fetching recipes:", error);
       }
     };
 
-    fetchWorkouts();
+    if (user) {
+      fetchWorkouts();
+    }
   }, [dispatch, user]);
+
+  // Filter workouts based on search term
+  const filteredWorkouts = workouts
+    ? workouts.filter((workout) =>
+        workout.title.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
 
   return (
     <div className="home">
+      {/* Search Bar */}
+      <input
+        type="text"
+        placeholder="Search workouts..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="search-bar"
+      />
+
       <div className="workouts">
-        {workouts && workouts.length > 0 ? (
-          workouts.map((workout) => (
-            workout ? <WorkoutDetails key={workout._id} workout={workout} /> : null
+        {filteredWorkouts.length > 0 ? (
+          filteredWorkouts.map((workout) => (
+            <WorkoutDetails key={workout._id} workout={workout} />
           ))
         ) : (
-          <p>Loading recipes...</p> // ✅ Prevents crashing when `workouts` is undefined
+          <p>No workouts found</p>
         )}
       </div>
+
       <WorkoutForm />
     </div>
   );
