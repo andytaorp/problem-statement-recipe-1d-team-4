@@ -3,7 +3,7 @@ import { useWorkoutContext } from "../hooks/useWorkoutContext";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { useAuthContext } from "../hooks/useAuthContext";
 
-function WorkoutDetails({ workout }) {
+function WorkoutDetails({ recipe }) {
   const { dispatch } = useWorkoutContext();
   const { user } = useAuthContext();
 
@@ -13,7 +13,7 @@ function WorkoutDetails({ workout }) {
     }
 
     const response = await fetch(
-      `${process.env.REACT_APP_API_URL}/api/workouts/${workout._id}`,
+      `${process.env.REACT_APP_API_URL}/api/recipes/${recipe._id}`,
       {
         method: "DELETE",
         headers: {
@@ -24,22 +24,30 @@ function WorkoutDetails({ workout }) {
     const json = await response.json();
 
     if (response.ok) {
-      dispatch({ type: "DELETE_WORKOUT", payload: json });
+      dispatch({ type: "DELETE_RECIPE", payload: json });
     }
   };
   return (
-    <div className="workout-details">
-      <h4>{workout.title}</h4>
+    <div className="recipe-details">
+      <h4>{recipe.title}</h4>
       <p>
-        <strong>Load (kg): </strong>
-        {workout.load}
+        <strong>Ingredients: </strong>
+        {recipe.ingredients.join(", ")}
       </p>
       <p>
-        <strong>Reps: </strong>
-        {workout.reps}
+        <strong>Instructions: </strong>
+        {recipe.instructions}
       </p>
       <p>
-        {formatDistanceToNow(new Date(workout.createdAt), { addSuffix: true })}
+        <strong>Preparation Time: </strong>
+        {recipe.prepTime} minutes
+      </p>
+      <p>
+        <strong>Difficulty: </strong>
+        {recipe.difficulty}
+      </p>
+      <p>
+        {formatDistanceToNow(new Date(recipe.createdAt), { addSuffix: true })}
       </p>
       <span className="material-symbols-outlined" onClick={handleClick}>
         delete

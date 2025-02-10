@@ -2,38 +2,55 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const createToken = (_id) => {
-  // sign(payload, secret, options)
-  // header + payload + secret =hash=> signature
-  // token = header.payload.signature
-  // every calling will create a new token as payload contains a timestamp
   return jwt.sign({ _id }, process.env.SECRET, { expiresIn: "3d" });
 };
 
-// login user
+// Login user
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+
   try {
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
     const user = await User.login(email, password);
-    // create a token
     const token = createToken(user._id);
-    res.status(200).json({ email, token });
+
+    return res.status(200).json({ email, token }); // ✅ Always return JSON
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Login Error:", error);
+
+    if (!res.headersSent) {
+      return res.status(400).json({ error: error.message || "Login failed" });
+    }
   }
 };
 
-// signup user
+
+// Signup user
 const signupUser = async (req, res) => {
   const { email, password } = req.body;
+
   try {
-    // save user in database
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
     const user = await User.signup(email, password);
-    // create a token
     const token = createToken(user._id);
-    res.status(200).json({ email, token });
+
+    return res.status(201).json({ email, token }); // ✅ Always return JSON
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Signup Error:", error);
+
+    if (!res.headersSent) {
+      return res.status(400).json({ error: error.message || "Signup failed" });
+    }
   }
 };
+
+
+
 
 module.exports = { loginUser, signupUser };
