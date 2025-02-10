@@ -11,7 +11,7 @@ export const useLogin = () => {
     setError(null);
 
     const response = await fetch(
-      `${process.env.REACT_APP_API_URL}/api/user/login`,
+      `${process.env.REACT_APP_API_URL}/api/auth/login`,
       {
         method: "POST",
         headers: {
