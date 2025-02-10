@@ -1,17 +1,17 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
+import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
-import { RecipeContextProvider } from "./context/WorkoutContext"; // Updated to use RecipeContext
 import { AuthContextProvider } from "./context/AuthContext";
+import { RecipeContextProvider } from "./context/WorkoutContext"; // ✅ Ensure correct import
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
+ReactDOM.render(
   <React.StrictMode>
     <AuthContextProvider>
-      <RecipeContextProvider> {/* Replaced WorkoutContextProvider with RecipeContextProvider */}
+      <RecipeContextProvider> {/* ✅ Wrap the entire app */}
         <App />
       </RecipeContextProvider>
     </AuthContextProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
+  document.getElementById("root")
 );

@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useAuthContext } from "../hooks/useAuthContext";
+import { useRecipeContext } from "../hooks/useRecipeContext"; // ✅ Import global recipe context
 
-function WorkoutForm() {
+function RecipeForm() {
   const { user } = useAuthContext();
+  const { dispatch } = useRecipeContext(); // ✅ Get dispatch from context
 
   const [name, setName] = useState("");
   const [ingredients, setIngredients] = useState([""]);
@@ -19,7 +21,7 @@ function WorkoutForm() {
   };
 
   const addIngredientField = () => {
-    setIngredients([...ingredients, ""]);
+    setIngredients([...ingredients, ""]); // Add empty ingredient field
   };
 
   const handleSubmit = async (e) => {
@@ -32,23 +34,31 @@ function WorkoutForm() {
 
     const recipe = { name, ingredients, instructions, prepTime, difficulty };
 
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes`, {
-      method: "POST",
-      body: JSON.stringify(recipe),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.token}`,
-      },
-    });
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify(recipe),
+      });
 
-    const json = await response.json();
+      if (!response.ok) {
+        const json = await response.json();
+        setError(json.error || "Failed to add recipe.");
+        setEmptyFields(json.emptyFields || []);
+        return;
+      }
 
-    if (!response.ok) {
-      setError(json.error);
-      setEmptyFields(json.emptyFields || []);
-    }
+      const newRecipe = await response.json();
 
-    if (response.ok) {
+      // ✅ Add recipe to global state so it appears immediately
+      dispatch({ type: "CREATE_RECIPE", payload: newRecipe });
+
+      console.log("New recipe added and dispatched", newRecipe);
+
+      // ✅ Clear form fields after successful submission
       setName("");
       setIngredients([""]);
       setInstructions("");
@@ -56,7 +66,9 @@ function WorkoutForm() {
       setDifficulty("easy");
       setError(null);
       setEmptyFields([]);
-      console.log("New recipe added", json);
+    } catch (err) {
+      console.error("Recipe submission error:", err);
+      setError("Failed to add recipe. Please check the server.");
     }
   };
 
@@ -82,7 +94,7 @@ function WorkoutForm() {
           className={emptyFields.includes("ingredients") ? "error" : ""}
         />
       ))}
-      <button type="button" onClick={addIngredientField}>Add Ingredient</button>
+      <button type="button" onClick={addIngredientField}>+ Add Ingredient</button>
 
       <label>Cooking Instructions:</label>
       <textarea
@@ -116,4 +128,4 @@ function WorkoutForm() {
   );
 }
 
-export default WorkoutForm;
+export default RecipeForm;
