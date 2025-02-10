@@ -116,4 +116,4 @@ function RecipeForm() {
   );
 }
 
-export default RecipeForm;
+export default WorkoutForm;
