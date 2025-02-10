@@ -1,17 +1,17 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import ReactDOM from "react-dom/client"; // ✅ Import createRoot
 import "./index.css";
 import App from "./App";
 import { AuthContextProvider } from "./context/AuthContext";
-import { RecipeContextProvider } from "./context/WorkoutContext"; // ✅ Ensure correct import
+import { RecipeContextProvider } from "./context/WorkoutContext";
 
-ReactDOM.render(
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
   <React.StrictMode>
     <AuthContextProvider>
-      <RecipeContextProvider> {/* ✅ Wrap the entire app */}
+      <RecipeContextProvider> {/* ✅ Ensure App is wrapped */}
         <App />
       </RecipeContextProvider>
     </AuthContextProvider>
-  </React.StrictMode>,
-  document.getElementById("root")
+  </React.StrictMode>
 );

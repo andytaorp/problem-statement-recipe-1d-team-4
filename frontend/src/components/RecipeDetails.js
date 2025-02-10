@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
-function WorkoutDetails() {
+function RecipeDetails() {
   const { id } = useParams();
   const { user } = useAuthContext();
+  const navigate = useNavigate();
+
   const [recipe, setRecipe] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,15 +18,23 @@ function WorkoutDetails() {
   const [ingredients, setIngredients] = useState([""]);
   const [instructions, setInstructions] = useState("");
 
-  const navigate = useNavigate();
+  // 🔹 Debugging: Log the recipe ID
+  console.log("Recipe ID from useParams:", id);
 
   useEffect(() => {
+    if (!id) {
+      console.error("❌ No Recipe ID found in URL");
+      setError("Recipe not found.");
+      setLoading(false);
+      return;
+    }
+
     const fetchRecipe = async () => {
       try {
+        console.log(`Fetching recipe with ID: ${id}`);
+
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes/${id}`, {
-          headers: {
-            Authorization: `Bearer ${user?.token}`,
-          },
+          headers: { Authorization: `Bearer ${user?.token}` },
         });
 
         if (!response.ok) {
@@ -45,9 +55,7 @@ function WorkoutDetails() {
       }
     };
 
-    if (user) {
-      fetchRecipe();
-    }
+    if (user) fetchRecipe();
   }, [id, user]);
 
   const handleUpdate = async (e) => {
@@ -188,4 +196,4 @@ function WorkoutDetails() {
   );
 }
 
-export default WorkoutDetails;
+export default RecipeDetails;
