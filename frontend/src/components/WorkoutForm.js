@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuthContext } from "../hooks/useAuthContext";
 
-function RecipeForm() {
+function WorkoutForm() {
   const { user } = useAuthContext();
 
   const [name, setName] = useState("");
