@@ -1,53 +1,26 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 
 function RecipeDetails() {
-  const { id } = useParams();
   const { user } = useAuthContext();
-  const navigate = useNavigate();
 
-  const [recipe, setRecipe] = useState(null);
+  const [recipes, setRecipes] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-
-  const [name, setName] = useState("");
-  const [prepTime, setPrepTime] = useState("");
-  const [difficulty, setDifficulty] = useState("easy");
-  const [ingredients, setIngredients] = useState([""]);
-  const [instructions, setInstructions] = useState("");
-
-  // 🔹 Debugging: Log the recipe ID
-  console.log("Recipe ID from useParams:", id);
 
   useEffect(() => {
-    if (!id) {
-      console.error("❌ No Recipe ID found in URL");
-      setError("Recipe not found.");
-      setLoading(false);
-      return;
-    }
-
-    const fetchRecipe = async () => {
+    const fetchRecipes = async () => {
       try {
-        console.log(`Fetching recipe with ID: ${id}`);
-
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes/${id}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes`, {
           headers: { Authorization: `Bearer ${user?.token}` },
         });
 
         if (!response.ok) {
-          throw new Error("Failed to fetch recipe details");
+          throw new Error("Failed to fetch recipes");
         }
 
         const data = await response.json();
-        setRecipe(data);
-        setName(data.name);
-        setPrepTime(data.prepTime);
-        setDifficulty(data.difficulty);
-        setIngredients(data.ingredients);
-        setInstructions(data.instructions);
+        setRecipes(data); // ✅ Store all recipes in state
       } catch (error) {
         setError(error.message);
       } finally {
@@ -55,143 +28,58 @@ function RecipeDetails() {
       }
     };
 
-    if (user) fetchRecipe();
-  }, [id, user]);
+    if (user) fetchRecipes();
+  }, [user]); // ✅ Fetch only when the user changes
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-
-    if (!user) {
-      setError("You must be logged in to update a recipe");
-      return;
-    }
-
-    const updatedRecipe = { name, prepTime, difficulty, ingredients, instructions };
-
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify(updatedRecipe),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update recipe");
-      }
-
-      const data = await response.json();
-      setRecipe(data);
-      setIsEditing(false);
-    } catch (error) {
-      setError(error.message);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!user) {
-      setError("You must be logged in to delete a recipe");
-      return;
-    }
-
+  const handleDelete = async (id) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
+        headers: { Authorization: `Bearer ${user.token}` },
       });
 
       if (!response.ok) {
         throw new Error("Failed to delete recipe");
       }
 
-      navigate("/"); // Redirect to home page after deletion
+      setRecipes((prevRecipes) => prevRecipes.filter((recipe) => recipe._id !== id)); // ✅ Remove deleted recipe
     } catch (error) {
       setError(error.message);
     }
   };
 
-  if (!user) {
-    return <p>You must be logged in to view this recipe.</p>;
-  }
-
-  if (loading) return <p>Loading recipe...</p>;
+  if (!user) return <p>You must be logged in to view your recipes.</p>;
+  if (loading) return <p>Loading recipes...</p>;
   if (error) return <p className="error">{error}</p>;
 
   return (
-    <div className="recipe-details">
-      {isEditing ? (
-        <form onSubmit={handleUpdate}>
-          <label>Recipe Name:</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+    <div className="recipes-container">
+      <div className="recipes">
+        <h2>Your Recipes</h2>
+        {recipes.length > 0 ? (
+          recipes.map((recipe) => (
+            <div key={recipe._id} className="recipe-item">
+              <h3>{recipe.name}</h3>
+              <p><strong>Prep Time:</strong> {recipe.prepTime} mins</p>
+              <p><strong>Difficulty:</strong> {recipe.difficulty}</p>
 
-          <label>Preparation Time (in minutes):</label>
-          <input
-            type="number"
-            value={prepTime}
-            onChange={(e) => setPrepTime(e.target.value)}
-          />
+              <h4>Ingredients:</h4>
+              <ul>
+                {recipe.ingredients.map((ingredient, index) => (
+                  <li key={index}>{ingredient}</li>
+                ))}
+              </ul>
 
-          <label>Difficulty Level:</label>
-          <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-          >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
+              <h4>Instructions:</h4>
+              <p>{recipe.instructions}</p>
 
-          <label>Ingredients:</label>
-          {ingredients.map((ingredient, index) => (
-            <input
-              key={index}
-              type="text"
-              value={ingredient}
-              onChange={(e) => {
-                const newIngredients = [...ingredients];
-                newIngredients[index] = e.target.value;
-                setIngredients(newIngredients);
-              }}
-            />
-          ))}
-          <button type="button" onClick={() => setIngredients([...ingredients, ""])}>Add Ingredient</button>
-
-          <label>Cooking Instructions:</label>
-          <textarea
-            value={instructions}
-            onChange={(e) => setInstructions(e.target.value)}
-          ></textarea>
-
-          <button type="submit">Update Recipe</button>
-        </form>
-      ) : (
-        <>
-          <h2>{recipe.name}</h2>
-          <p><strong>Preparation Time:</strong> {recipe.prepTime} minutes</p>
-          <p><strong>Difficulty:</strong> {recipe.difficulty}</p>
-
-          <h3>Ingredients:</h3>
-          <ul>
-            {recipe.ingredients.map((ingredient, index) => (
-              <li key={index}>{ingredient}</li>
-            ))}
-          </ul>
-
-          <h3>Instructions:</h3>
-          <p>{recipe.instructions}</p>
-
-          <button onClick={() => setIsEditing(true)}>Edit Recipe</button>
-          <button onClick={handleDelete}>Delete Recipe</button>
-        </>
-      )}
+              <button onClick={() => handleDelete(recipe._id)}>Delete</button>
+            </div>
+          ))
+        ) : (
+          <p>No recipes found. Add a new recipe!</p>
+        )}
+      </div>
     </div>
   );
 }
