@@ -8,28 +8,27 @@ function RecipeDetails() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(null);
   const [editRecipe, setEditRecipe] = useState(null);
-  const [sortOrder, setSortOrder] = useState("name"); // State for sorting order
+
+  const fetchRecipes = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes`, {
+        headers: { Authorization: `Bearer ${user?.token}` },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch recipes");
+      }
+
+      const data = await response.json();
+      setRecipes(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes`, {
-          headers: { Authorization: `Bearer ${user?.token}` },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch recipes");
-        }
-
-        const data = await response.json();
-        setRecipes(data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (user) fetchRecipes();
   }, [user]);
 
@@ -40,23 +39,23 @@ function RecipeDetails() {
 
   const handleUpdate = async (id) => {
     try {
+      const updatedData = { ...editRecipe }; // Ensure latest state is used
+
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/recipes/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${user.token}`,
         },
-        body: JSON.stringify(editRecipe),
+        body: JSON.stringify(updatedData),
       });
 
       if (!response.ok) {
         throw new Error("Failed to update recipe");
       }
 
-      const updatedRecipe = await response.json();
-      setRecipes((prevRecipes) =>
-        prevRecipes.map((recipe) => (recipe._id === id ? updatedRecipe : recipe))
-      );
+      // Refetch recipes to get the latest data
+      await fetchRecipes();
 
       setIsEditing(null);
       setEditRecipe(null);
@@ -76,26 +75,12 @@ function RecipeDetails() {
         throw new Error("Failed to delete recipe");
       }
 
+      // Ensure new reference to trigger re-render
       setRecipes((prevRecipes) => prevRecipes.filter((recipe) => recipe._id !== id));
     } catch (error) {
       setError(error.message);
     }
   };
-
-  const handleSortChange = (e) => {
-    setSortOrder(e.target.value);
-  };
-
-  const sortedRecipes = [...recipes].sort((a, b) => {
-    if (sortOrder === "name") {
-      return a.name.localeCompare(b.name);
-    } else if (sortOrder === "prepTime") {
-      return a.prepTime - b.prepTime;
-    } else if (sortOrder === "difficulty") {
-      return a.difficulty.localeCompare(b.difficulty);
-    }
-    return 0;
-  });
 
   if (!user) return <p>You must be logged in to view your recipes.</p>;
   if (loading) return <p>Loading recipes...</p>;
@@ -105,14 +90,8 @@ function RecipeDetails() {
     <div className="recipes-container">
       <div className="recipes">
         <h2>Your Recipes</h2>
-        <label htmlFor="sort">Sort by:</label>
-        <select id="sort" value={sortOrder} onChange={handleSortChange}>
-          <option value="name">Name</option>
-          <option value="prepTime">Preparation Time</option>
-          <option value="difficulty">Difficulty</option>
-        </select>
-        {sortedRecipes.length > 0 ? (
-          sortedRecipes.map((recipe) => (
+        {recipes.length > 0 ? (
+          recipes.map((recipe) => (
             <div key={recipe._id} className="recipe-item">
               {isEditing === recipe._id ? (
                 <div className="edit-form">
