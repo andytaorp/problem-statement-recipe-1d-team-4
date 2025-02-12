@@ -11,8 +11,8 @@
 
  **🤖 Sanraj AI**
 - ✅ Implemented **AI Integration**
-- ✅ Hosted the **Applicatio**
-- 🎨 **CSS Styling Improvements** (AI Iegration Part)
+- ✅ Hosted the **Application**
+- 🎨 **CSS Styling Improvements** (AI Integration Part)
   
  **👤 Myu**
 - ✅ Implemented **delete & update** functionality
