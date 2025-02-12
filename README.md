@@ -18,3 +18,6 @@
 - ✅ Implemented **delete & update** functionality
 - ✅ Implemented **sort** functionality
 - ✅ Created **recipe details page**
+
+**👤 Nigel**
+- ✅ Made **Edit** work
