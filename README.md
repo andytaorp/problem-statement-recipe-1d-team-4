@@ -16,4 +16,5 @@
   
  **👤 Myu**
 - ✅ Implemented **delete & update** functionality
+- ✅ Implemented **sort** functionality
 - ✅ Created **recipe details page**
