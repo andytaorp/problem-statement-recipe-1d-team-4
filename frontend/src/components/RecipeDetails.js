@@ -8,6 +8,7 @@ function RecipeDetails() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(null);
   const [editRecipe, setEditRecipe] = useState(null);
+  const [sortOrder, setSortOrder] = useState("name"); // State for sorting order
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -58,7 +59,7 @@ function RecipeDetails() {
       );
 
       setIsEditing(null);
-      setEditRecipe(null); // ✅ Clear edit state to prevent issues
+      setEditRecipe(null);
     } catch (error) {
       setError(error.message);
     }
@@ -81,6 +82,21 @@ function RecipeDetails() {
     }
   };
 
+  const handleSortChange = (e) => {
+    setSortOrder(e.target.value);
+  };
+
+  const sortedRecipes = [...recipes].sort((a, b) => {
+    if (sortOrder === "name") {
+      return a.name.localeCompare(b.name);
+    } else if (sortOrder === "prepTime") {
+      return a.prepTime - b.prepTime;
+    } else if (sortOrder === "difficulty") {
+      return a.difficulty.localeCompare(b.difficulty);
+    }
+    return 0;
+  });
+
   if (!user) return <p>You must be logged in to view your recipes.</p>;
   if (loading) return <p>Loading recipes...</p>;
   if (error) return <p className="error">{error}</p>;
@@ -89,8 +105,14 @@ function RecipeDetails() {
     <div className="recipes-container">
       <div className="recipes">
         <h2>Your Recipes</h2>
-        {recipes.length > 0 ? (
-          recipes.map((recipe) => (
+        <label htmlFor="sort">Sort by:</label>
+        <select id="sort" value={sortOrder} onChange={handleSortChange}>
+          <option value="name">Name</option>
+          <option value="prepTime">Preparation Time</option>
+          <option value="difficulty">Difficulty</option>
+        </select>
+        {sortedRecipes.length > 0 ? (
+          sortedRecipes.map((recipe) => (
             <div key={recipe._id} className="recipe-item">
               {isEditing === recipe._id ? (
                 <div className="edit-form">
